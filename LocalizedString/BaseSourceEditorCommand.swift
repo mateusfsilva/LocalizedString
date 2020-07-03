@@ -91,14 +91,14 @@ class BaseSourceEditorCommand: NSObject {
         var originalStringLength = 0
 
         // If is the end of line adds line break in new text
-        if originalString.substring(from: originalString.index(before: originalString.endIndex)) == "\n" {
+        if originalString.last == "\n" {
           newString = "\n"
           newStringLength = -1
         }
 
-        originalString = originalString.substring(to: originalString.index(before: originalString.endIndex))
+        originalString = String(originalString.dropLast())
 
-        originalStringLength = originalStringLength + originalString.characters.count
+        originalStringLength = originalStringLength + originalString.count
 
         // Updates the new string
         switch format {
@@ -113,7 +113,7 @@ class BaseSourceEditorCommand: NSObject {
           case .ObjectiveCWithDefaultLocalizedString: newString = "NSLocalizedStringWithDefaultValue(<#key#>, <#tableName#>, <#bundle#>, \(originalString), <#comment#>)" + newString
         }
 
-        newStringLength = newStringLength + newString.characters.count
+        newStringLength = newStringLength + newString.count
 
         // Replaces the old text with the new text
         replace(position: selectedRange.start, length: originalStringLength, with: newString, inBuffer: buffer)
@@ -130,7 +130,7 @@ class BaseSourceEditorCommand: NSObject {
           lineAdjust.columns = 0
         }
 
-        lineAdjust.columns = lineAdjust.columns + newString.characters.count - originalStringLength
+        lineAdjust.columns = lineAdjust.columns + newString.count - originalStringLength
       }
     }
     
@@ -149,7 +149,7 @@ class BaseSourceEditorCommand: NSObject {
       let from = lineText.index(lineText.startIndex, offsetBy: textRange.start.column)
       let to = lineText.index(lineText.startIndex, offsetBy: textRange.end.column)
 
-      return lineText[from...to]
+      return String(lineText[from...to])
     }
 
     var text = ""
@@ -158,8 +158,8 @@ class BaseSourceEditorCommand: NSObject {
       let lineText = buffer.lines[aLine] as! String
 
       switch aLine {
-      case textRange.start.line: text += lineText.substring(from: lineText.index(lineText.startIndex, offsetBy: textRange.start.column))
-      case textRange.end.line: text += lineText.substring(to: lineText.index(lineText.startIndex, offsetBy: textRange.end.column + 1))
+      case textRange.start.line: text += lineText[lineText.index(lineText.startIndex, offsetBy: textRange.start.column)...]
+      case textRange.end.line: text += lineText[..<lineText.index(lineText.startIndex, offsetBy: textRange.end.column + 1)]
       default: text += lineText
       }
     }
